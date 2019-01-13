@@ -244,7 +244,7 @@ func TestTempError(t *testing.T) {
 
 }
 
-func ExamplePingPong() {
+func ExampleWrap() {
 	wg := &sync.WaitGroup{}
 
 	// create a listener
