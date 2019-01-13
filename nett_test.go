@@ -1,13 +1,15 @@
-package nett
+package nett_test
 
 import (
 	"errors"
+	"fmt"
 	"net"
 	"sync"
 	"testing"
 	"time"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/v-braun/nett"
 )
 
 var expectedReadErr = errors.New("READ")
@@ -63,12 +65,12 @@ func TestWrap(t *testing.T) {
 	wg := &sync.WaitGroup{}
 
 	wg.Add(1)
-	client1.OnClosed(func(conn Connection) {
+	client1.OnClosed(func(conn nett.Connection) {
 		wg.Done()
 	})
 
 	wg.Add(1)
-	client2.OnClosed(func(conn Connection) {
+	client2.OnClosed(func(conn nett.Connection) {
 		wg.Done()
 	})
 
@@ -86,7 +88,7 @@ func TestSend(t *testing.T) {
 	wg := &sync.WaitGroup{}
 
 	wg.Add(1)
-	client2.OnData(func(conn Connection, data []byte) {
+	client2.OnData(func(conn nett.Connection, data []byte) {
 		receiveData = data
 		wg.Done()
 	})
@@ -111,7 +113,7 @@ func TestSendAsync(t *testing.T) {
 	wg := &sync.WaitGroup{}
 
 	wg.Add(1)
-	client2.OnData(func(conn Connection, data []byte) {
+	client2.OnData(func(conn nett.Connection, data []byte) {
 		receiveData = data
 		wg.Done()
 	})
@@ -134,17 +136,17 @@ func TestErr(t *testing.T) {
 
 	var expectedErr1 error = nil
 	wg.Add(1)
-	client1.OnErr(func(conn Connection, err error) {
+	client1.OnErr(func(conn nett.Connection, err error) {
 		expectedErr1 = err
 		wg.Done()
 	})
 	wg.Add(1)
-	client1.OnClosed(func(conn Connection) {
+	client1.OnClosed(func(conn nett.Connection) {
 		wg.Done()
 	})
 
 	wg.Add(1)
-	client2.OnClosed(func(conn Connection) {
+	client2.OnClosed(func(conn nett.Connection) {
 		wg.Done()
 	})
 
@@ -169,13 +171,13 @@ func TestNillableHandlers(t *testing.T) {
 }
 
 func TestUnexpectedErr(t *testing.T) {
-	c := Wrap(&mockConn{expectedReadErr, expectedWriteErr}, createReader(mockMsg))
+	c := nett.Wrap(&mockConn{expectedReadErr, expectedWriteErr}, createReader(mockMsg))
 	wg := &sync.WaitGroup{}
 
 	var expectedErr1 error
 	var expectedErr2 error
 	wg.Add(2)
-	c.OnErr(func(conn Connection, err error) {
+	c.OnErr(func(conn nett.Connection, err error) {
 		if expectedErr1 == nil {
 			expectedErr1 = err
 		} else {
@@ -184,7 +186,7 @@ func TestUnexpectedErr(t *testing.T) {
 		wg.Done()
 	})
 	wg.Add(1)
-	c.OnClosed(func(conn Connection) {
+	c.OnClosed(func(conn nett.Connection) {
 		wg.Done()
 	})
 
@@ -196,16 +198,16 @@ func TestReadAll(t *testing.T) {
 	wg := &sync.WaitGroup{}
 	wg.Add(2)
 	c1, c2 := createClients(t)
-	client1 := Wrap(c1, ReadLineReader)
-	client2 := Wrap(c2, ReadLineReader)
+	client1 := nett.Wrap(c1, nett.ReadLineReader)
+	client2 := nett.Wrap(c2, nett.ReadLineReader)
 
-	client1.OnData(func(conn Connection, data []byte) {
+	client1.OnData(func(conn nett.Connection, data []byte) {
 		assert.Equal(t, "ping\n", string(data))
 		conn.Send([]byte("pong\n"))
 
 		wg.Done()
 	})
-	client2.OnData(func(conn Connection, data []byte) {
+	client2.OnData(func(conn nett.Connection, data []byte) {
 		assert.Equal(t, "pong\n", string(data))
 		wg.Done()
 	})
@@ -242,16 +244,16 @@ func TestTempError(t *testing.T) {
 	}
 
 	conn := &mockConn{writeErr: expectedWriteErr, readErr: nil}
-	c := Wrap(conn, reader)
+	c := nett.Wrap(conn, reader)
 
-	c.OnErr(func(conn Connection, err error) {
+	c.OnErr(func(conn nett.Connection, err error) {
 		wgErrorHandler.Done()
 		if err != expectedReadErr && err != expectedWriteErr {
 			assert.FailNow(t, "unexpected err")
 		}
 	})
 
-	c.OnClosed(func(conn Connection) {
+	c.OnClosed(func(conn nett.Connection) {
 		wgClosedHandler.Done()
 	})
 
@@ -264,6 +266,55 @@ func TestTempError(t *testing.T) {
 	wgErrorHandler.Wait()
 	wgClosedHandler.Wait()
 
+}
+
+func ExamplePingPong() {
+	wg := &sync.WaitGroup{}
+
+	// create a listener
+	srvAddr, _ := net.ResolveTCPAddr("tcp", ":0")
+	s, _ := net.Listen("tcp", srvAddr.String())
+
+	// setup async accept for the listener
+	srvConnChan := make(chan net.Conn)
+	go func() {
+		for {
+			c, _ := s.Accept()
+			if c != nil {
+				srvConnChan <- c
+			}
+		}
+	}()
+
+	// dial to the listener above
+	clntAddr, _ := net.ResolveTCPAddr("tcp", ":0")
+	c1, _ := net.DialTCP("tcp", clntAddr, s.Addr().(*net.TCPAddr))
+	c2 := <-srvConnChan
+
+	wg.Add(2) // expect a ping and a pong
+	client1 := nett.Wrap(c1, nett.ReadLineReader)
+	client2 := nett.Wrap(c2, nett.ReadLineReader)
+
+	client1.OnData(func(c nett.Connection, data []byte) {
+		fmt.Print(string(data))
+		c.Send([]byte("pong\n"))
+		wg.Done()
+	})
+
+	client2.OnData(func(c nett.Connection, data []byte) {
+		fmt.Print(string(data))
+		wg.Done()
+	})
+
+	client2.Send([]byte("ping\n"))
+
+	wg.Wait() // wait until ping and pong
+	client2.Close()
+	client1.Close()
+
+	// Output:
+	//ping
+	//pong
 }
 
 func createReader(expectedMsg []byte) func(rawConn net.Conn) ([]byte, error) {
@@ -293,13 +344,13 @@ func accept(t *testing.T, listener net.Listener) chan net.Conn {
 	return c
 }
 
-func createSUTs(t *testing.T) (Connection, Connection) {
+func createSUTs(t *testing.T) (nett.Connection, nett.Connection) {
 	read := createReader(mockMsg)
 
 	c1, c2 := createClients(t)
 
-	client1 := Wrap(c1, read)
-	client2 := Wrap(c2, read)
+	client1 := nett.Wrap(c1, read)
+	client2 := nett.Wrap(c2, read)
 
 	return client1, client2
 }

@@ -10,16 +10,33 @@ var onDataNop = func(conn Connection, data []byte) {}
 var onErrNop = func(conn Connection, err error) {}
 var onClosedNop = func(conn Connection) {}
 
+// Connection is the wrapping interface of net.Conn
 type Connection interface {
+
+	// Raw returns the underlining *net.Conn* connection
 	Raw() net.Conn
+
+	// OnData registers the *handler* that will be called on data from peer
 	OnData(handler func(conn Connection, data []byte))
+
+	// OnErr registers the *handler* that will be called on an error during the communication
 	OnErr(handler func(conn Connection, err error))
+
+	// OnErr registers the *handler* that will be called when the connection was closed
 	OnClosed(handler func(conn Connection))
+
+	// Send sends the given data to the peer
 	Send(data []byte) error
+
+	// SendAsync is same as *Send* but runs in a goroutine
 	SendAsync(data []byte)
+
+	// Close will close the current connection
 	Close()
 }
 
+// ReadLineReader is an reader implementation (see Wrap)
+// that reads data line by line from the underlining connection
 var ReadLineReader = func(rawConn net.Conn) ([]byte, error) {
 	newLine := byte('\n')
 	buffer := []byte{}
@@ -46,6 +63,12 @@ type conn struct {
 	wg       sync.WaitGroup
 }
 
+// Wrap will wrap the given net.Conn connection and return a nett.Connection object
+// that provide you an event based interface.
+//
+//
+// The *reader* will be used in a goroutine to decode data from the network stream.
+// The return value of the reader will be passed into the *OnData* handler
 func Wrap(inner net.Conn, reader func(rawConn net.Conn) ([]byte, error)) Connection {
 	result := &conn{
 		inner:    inner,
