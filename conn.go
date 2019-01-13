@@ -1,6 +1,7 @@
 package conn
 
 import (
+	"io"
 	"net"
 	"sync"
 )
@@ -14,6 +15,25 @@ type Connection interface {
 	OnData(handler func(conn Connection, data []byte))
 	OnErr(handler func(conn Connection, err error))
 	OnClosed(handler func(conn Connection))
+	Send(data []byte) error
+	SendAsync(data []byte)
+	Close()
+}
+
+var ReadLineReader = func(rawConn net.Conn) ([]byte, error) {
+	newLine := byte('\n')
+	buffer := []byte{}
+	readBuffer := make([]byte, 1)
+	for {
+		_, err := rawConn.Read(readBuffer)
+		if err != nil {
+			return nil, err
+		}
+		buffer = append(buffer, readBuffer[0])
+		if readBuffer[0] == newLine {
+			return buffer, nil
+		}
+	}
 }
 
 type conn struct {
@@ -36,6 +56,9 @@ func Wrap(inner net.Conn, reader func(rawConn net.Conn) ([]byte, error)) Connect
 		mutex:    sync.Mutex{},
 		wg:       sync.WaitGroup{},
 	}
+
+	result.wg.Add(1)
+	go result.runRead()
 
 	return result
 }
@@ -111,12 +134,30 @@ func (c *conn) runRead() {
 	for {
 		data, err := c.reader(c.inner)
 		if err = hideTempError(err); err != nil {
+			if isClosedConnErrr(err) {
+				return
+			}
+
 			c.notifyErr(err)
 			return
 		}
 
-		c.notifyData(data)
+		if len(data) > 0 {
+			c.notifyData(data)
+		}
 	}
+}
+
+func isClosedConnErrr(err error) bool {
+	if err == io.EOF {
+		return true
+	}
+	closedConnErr := "use of closed network connection"
+	if opErr, ok := err.(*net.OpError); ok && opErr.Err.Error() == closedConnErr {
+		return true
+	}
+
+	return false
 }
 
 func (c *conn) notifyErr(err error) {
