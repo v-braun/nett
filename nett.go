@@ -175,8 +175,13 @@ func isClosedConnErrr(err error) bool {
 	if err == io.EOF {
 		return true
 	}
+
 	closedConnErr := "use of closed network connection"
+	closedPipeConnErr := "io: read/write on closed pipe"
 	if opErr, ok := err.(*net.OpError); ok && opErr.Err.Error() == closedConnErr {
+		return true
+	}
+	if err.Error() == closedPipeConnErr {
 		return true
 	}
 

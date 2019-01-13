@@ -248,7 +248,7 @@ func ExampleWrap() {
 	wg := &sync.WaitGroup{}
 
 	// create a listener
-	srvAddr, _ := net.ResolveTCPAddr("tcp", ":0")
+	srvAddr, _ := net.ResolveTCPAddr("tcp", "localhost:0")
 	s, _ := net.Listen("tcp", srvAddr.String())
 
 	// setup async accept for the listener
@@ -263,7 +263,7 @@ func ExampleWrap() {
 	}()
 
 	// dial to the listener above
-	clntAddr, _ := net.ResolveTCPAddr("tcp", ":0")
+	clntAddr, _ := net.ResolveTCPAddr("tcp", "localhost:0")
 	c1, _ := net.DialTCP("tcp", clntAddr, s.Addr().(*net.TCPAddr))
 	c2 := <-srvConnChan
 
@@ -321,6 +321,7 @@ func accept(t *testing.T, listener net.Listener) chan net.Conn {
 }
 
 func createSUTs(t *testing.T) (nett.Connection, nett.Connection) {
+	// c1, c2 := net.Pipe()
 	read := createReader(mockMsg)
 
 	c1, c2 := createClients(t)
@@ -346,7 +347,7 @@ func createClients(t *testing.T) (net.Conn, net.Conn) {
 }
 
 func createClient(t *testing.T, remote net.Addr) net.Conn {
-	localAddr, err := net.ResolveTCPAddr("tcp", ":0")
+	localAddr, err := net.ResolveTCPAddr("tcp", "localhost:0")
 	c, err := net.DialTCP("tcp", localAddr, remote.(*net.TCPAddr))
 
 	if err != nil {
@@ -358,7 +359,7 @@ func createClient(t *testing.T, remote net.Addr) net.Conn {
 }
 
 func createListener(t *testing.T) (net.Listener, net.Addr) {
-	localAddr, err := net.ResolveTCPAddr("tcp", ":0")
+	localAddr, err := net.ResolveTCPAddr("tcp", "localhost:0")
 	if err != nil {
 		t.Error(err)
 		return nil, nil
