@@ -321,7 +321,7 @@ func accept(t *testing.T, listener net.Listener) chan net.Conn {
 }
 
 func createSUTs(t *testing.T) (nett.Connection, nett.Connection) {
-	// c1, c2 := net.Pipe()
+	// c1, c2 := net.Pipe() could be used to check pipes / without a client / server
 	read := createReader(mockMsg)
 
 	c1, c2 := createClients(t)

@@ -177,13 +177,15 @@ func isClosedConnErrr(err error) bool {
 	}
 
 	closedConnErr := "use of closed network connection"
-	closedPipeConnErr := "io: read/write on closed pipe"
+	// maybe we need that for pipes usefull for pipes
+	// closedPipeConnErr := "io: read/write on closed pipe"
 	if opErr, ok := err.(*net.OpError); ok && opErr.Err.Error() == closedConnErr {
 		return true
 	}
-	if err.Error() == closedPipeConnErr {
-		return true
-	}
+	// maybe we need that for pipes
+	// if err.Error() == closedPipeConnErr {
+	// 	return true
+	// }
 
 	return false
 }
