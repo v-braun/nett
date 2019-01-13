@@ -170,30 +170,6 @@ func TestNillableHandlers(t *testing.T) {
 	client2.Close()
 }
 
-func TestUnexpectedErr(t *testing.T) {
-	c := nett.Wrap(&mockConn{expectedReadErr, expectedWriteErr}, createReader(mockMsg))
-	wg := &sync.WaitGroup{}
-
-	var expectedErr1 error
-	var expectedErr2 error
-	wg.Add(2)
-	c.OnErr(func(conn nett.Connection, err error) {
-		if expectedErr1 == nil {
-			expectedErr1 = err
-		} else {
-			expectedErr2 = err
-		}
-		wg.Done()
-	})
-	wg.Add(1)
-	c.OnClosed(func(conn nett.Connection) {
-		wg.Done()
-	})
-
-	c.Send(mockMsg)
-	c.Close()
-}
-
 func TestReadAll(t *testing.T) {
 	wg := &sync.WaitGroup{}
 	wg.Add(2)
