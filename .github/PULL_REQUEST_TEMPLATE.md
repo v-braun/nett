@@ -1,8 +1,8 @@
-<!-- Thanks for contributing to _conn_! Before you submit your pull request, please make sure to check the following boxes by putting an x in the [ ] -->
+<!-- Thanks for contributing to _nett_! Before you submit your pull request, please make sure to check the following boxes by putting an x in the [ ] -->
 
 ### Checklist
 - [ ] I've tested my changes.
-- [ ] I've read the [Contribution Guidelines](https://github.com/v-braun/conn/blob/master/CONTRIBUTING.md).
+- [ ] I've read the [Contribution Guidelines](https://github.com/v-braun/nett/blob/master/CONTRIBUTING.md).
 - [ ] I've updated the documentation if necessary.
 
 ### Motivation and Context

@@ -1,6 +1,6 @@
 ---
 name: Feature request
-about: Suggest an idea for conn
+about: Suggest an idea for nett
 
 ---
 

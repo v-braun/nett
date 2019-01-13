@@ -1,11 +1,11 @@
-# conn
-> Conn wrapper with simple API
+# nett
+> Go's net.Conn wrapper with simple API
 
 By [v-braun - viktor-braun.de](https://viktor-braun.de).
 
-[![](https://img.shields.io/github/license/v-braun/conn.svg?style=flat-square)](https://github.com/v-braun/conn/blob/master/LICENSE)
-[![Build Status](https://img.shields.io/travis/v-braun/conn.svg?style=flat-square)](https://travis-ci.org/v-braun/conn)
-[![codecov](https://codecov.io/gh/v-braun/conn/branch/master/graph/badge.svg)](https://codecov.io/gh/v-braun/conn)
+[![](https://img.shields.io/github/license/v-braun/nett.svg?style=flat-square)](https://github.com/v-braun/nett/blob/master/LICENSE)
+[![Build Status](https://img.shields.io/travis/v-braun/nett.svg?style=flat-square)](https://travis-ci.org/v-braun/nett)
+[![codecov](https://codecov.io/gh/v-braun/nett/branch/master/graph/badge.svg)](https://codecov.io/gh/v-braun/nett)
 ![PR welcome](https://img.shields.io/badge/PR-welcome-green.svg?style=flat-square)
 
 <p align="center">
@@ -18,7 +18,7 @@ By [v-braun - viktor-braun.de](https://viktor-braun.de).
 
 ## Installation
 ```sh
-go get github.com/v-braun/conn
+go get github.com/v-braun/nett
 ```
 
 
@@ -26,13 +26,13 @@ go get github.com/v-braun/conn
 ## Usage
 
 ```
-use conn
+use nett
 ```
 
 ## Configuration
 
 ```
-configure conn
+configure nett
 ```
 
 
@@ -47,8 +47,8 @@ configure conn
 ## Contributing
 
 Make sure to read these guides before getting started:
-- [Contribution Guidelines](https://github.com/v-braun/conn/blob/master/CONTRIBUTING.md)
-- [Code of Conduct](https://github.com/v-braun/conn/blob/master/CODE_OF_CONDUCT.md)
+- [Contribution Guidelines](https://github.com/v-braun/nett/blob/master/CONTRIBUTING.md)
+- [Code of Conduct](https://github.com/v-braun/nett/blob/master/CODE_OF_CONDUCT.md)
 
 ## License
-**conn** is available under the MIT License. See [LICENSE](https://github.com/v-braun/conn/blob/master/LICENSE) for details.
+**nett** is available under the MIT License. See [LICENSE](https://github.com/v-braun/nett/blob/master/LICENSE) for details.
