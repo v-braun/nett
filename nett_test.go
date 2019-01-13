@@ -166,6 +166,8 @@ func TestNillableHandlers(t *testing.T) {
 	client1.OnErr(nil)
 	client1.OnData(nil)
 
+	client1.Send(mockMsg)
+
 	client1.Close()
 	client2.Close()
 }
