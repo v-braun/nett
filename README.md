@@ -104,7 +104,7 @@ func ExamplePingPong() {
 You have to provide a *reader* callback to the *Wrap()* func.  
 This callback will be called in a goroutine and waits until a *[]byte* is returned.  
 The result of this callback will be assumed as a complete message and the *OnData* handler will be called.  
-A basic implementation of this handler is the **[ReadLineReader]**(https://github.com/v-braun/nett/blob/58d050c19512052eef1daa9020285eb48cdafc1d/nett.go#L40):   
+A basic implementation of this handler is the [**ReadLineReader**](https://github.com/v-braun/nett/blob/58d050c19512052eef1daa9020285eb48cdafc1d/nett.go#L40):   
 
 ``` golang
 
